@@ -1216,5 +1216,21 @@ function strategy1 (input) {
   return peakMinute * parseInt(max.guard, 10);
 }
 
+function strategy2 (input) {
+  const guardMinutes = input.reduce((acc, event) => {
+    if (!acc[guard]) {
+      acc[guard] = Array.from({length: 60}, (() => 0))
+    };
+    for (time = event.start; time <= event.end; time ++) {
+      acc[guard][time]++
+    }
+    return acc;
+  }, {});
+  return guardMinutes;
+}
+
 console.log(strategy1(orderInput(testInputs)));
 console.log(strategy1(orderInput(inputs)));
+
+console.log(strategy2(orderInput(testInputs)));
+console.log(strategy2(orderInput(inputs)));
