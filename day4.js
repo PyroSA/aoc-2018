@@ -1165,7 +1165,7 @@ function orderInput (input) {
       case 'G': acc.active = event.substring(26, event.indexOf(' begins')); break;
       case 'f': acc.start = parseInt(event.substring(15, 17), 10); break;
       case 'w':
-        end = parseInt(event.substring(15, 17));
+        end = parseInt(event.substring(15, 17), 10);
         acc.sleep.push({ guard: acc.active, start: acc.start, end: end - 1, duration: end - acc.start })
         acc.start = undefined;
         break;
@@ -1217,16 +1217,44 @@ function strategy1 (input) {
 }
 
 function strategy2 (input) {
+  // summarize sleep events per minute
   const guardMinutes = input.reduce((acc, event) => {
-    if (!acc[guard]) {
-      acc[guard] = Array.from({length: 60}, (() => 0))
+    if (!acc[event.guard]) {
+      acc[event.guard] = Array.from({length: 60}, (() => 0))
     };
     for (time = event.start; time <= event.end; time ++) {
-      acc[guard][time]++
+      acc[event.guard][time]++
     }
     return acc;
   }, {});
-  return guardMinutes;
+
+  // find max sleep events per guard
+  const maxMinutes = []
+  for (guard in guardMinutes) {
+    const max = guardMinutes[guard].reduce((acc, value, minute) => {
+      if (value > acc.value) {
+        acc.value = value;
+        acc.minute = minute;
+      }
+      return acc;
+    }, { minute: 0, value: 0 });
+    const obj = { guard, ...max };
+    maxMinutes.push(obj);
+  }
+
+  // find guard with max sleep events
+  const peak = maxMinutes.reduce((acc, guard) => {
+    if (guard.value > acc.value) {
+      acc.value = guard.value;
+      acc.minute = guard.minute;
+      acc.guard = guard.guard;
+    }
+    return acc;
+}, { value: 0 });
+
+  // return the big sleeper math
+  return parseInt(peak.guard, 10) * peak.minute;
+
 }
 
 console.log(strategy1(orderInput(testInputs)));
