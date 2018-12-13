@@ -2,6 +2,13 @@ const input = 'ZzNnMYytTtfFTINnkKimYUOouyPpvVokKZzqQQqTtMmmIiMjJryYvVRztJjiIfFyG
 
 const testInput = 'dabAcCaCBAcCcaDA';
 
+function convertToNumbers(string) {
+  return [...string].map((char) => char.charCodeAt())
+};
+
+function convertToString(numberArr) {
+  return numberArr.map((num) => String.fromCharCode(num)).join('');
+};
 
 function removeNeighbours(arr) {
   const newArr = [];
@@ -25,21 +32,43 @@ function removeNeighbours(arr) {
   return newArr;
 }
 
+function findUnique(arr) {
+  return arr
+    .map((value) => value & 95)
+    .filter((value, index, array) => array.indexOf(value) === index);
+}
+
 function part1(arr) {
-  let numbers = [...arr].map((char) => char.charCodeAt());
+  let numbers = convertToNumbers(arr);
   let index;
 
   numbers = removeNeighbours(numbers);
-  let letters = numbers.map((num) => String.fromCharCode(num)).join('');
+  let letters = convertToString(numbers);
   return letters;
 }
 
 function part2(arr) {
-  return 'todo';
+  let numbers = convertToNumbers(arr);
+
+  numbers = removeNeighbours(numbers);
+
+  const uniques = findUnique(numbers);
+
+  const uniqueSets = uniques.map((value, index) => {
+    return removeNeighbours(numbers.filter((v) => (v & 95) ^ value));
+  });
+
+  const minLength = uniqueSets.reduce((acc, set) => set.length < acc ? set.length : acc, Number.MAX_SAFE_INTEGER);
+
+  return minLength;
 }
+
+// some bit-logic in JS... whee!
+// switching between Uppercase & lowercase is a toggle of '32' - bit 6.
+// comparing the two can be done by comparing bits 1-5 & 7 -> 95
 
 console.log(part1(testInput));
 console.log(part1(input).length);
 
-// console.log(part2(testInput));
-// console.log(part2(input));
+console.log(part2(testInput));
+console.log(part2(input));
