@@ -40,7 +40,6 @@ function findUnique(arr) {
 
 function part1(arr) {
   let numbers = convertToNumbers(arr);
-  let index;
 
   numbers = removeNeighbours(numbers);
   let letters = convertToString(numbers);
