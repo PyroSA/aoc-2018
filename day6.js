@@ -60,7 +60,92 @@ const input = [
   {x: 83, y: 97}
 ];
 
+function findExtent (arr) {
+  return arr.reduce((acc, {x, y}) => {
+    acc.max.x = acc.max.x < x ? x : acc.max.x;
+    acc.max.y = acc.max.y < y ? y : acc.max.y;
+    acc.min.x = acc.min.x > x ? x : acc.min.x;
+    acc.min.y = acc.min.y > y ? y : acc.min.y;
+    return acc;
+  }, { max: { x: Number.MIN_SAFE_INTEGER, y: Number.MIN_SAFE_INTEGER }, min: { x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER }});
+}
+
+function buildExtent(extent) {
+  return Array.from({length: extent.max.y - extent.min.y +1 }, (() => Array.from({length: extent.max.x - extent.min.x + 1}, (() => undefined))));
+}
+
+function calcManhattan ( a, b ) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function markArea(extent, arr) {
+  const area = buildExtent(extent);
+
+  area.forEach((row, y) => {
+    row.forEach((block, x) => {
+      const c = {
+        x: x + extent.min.x,
+        y: y + extent.min.y
+      }
+      let mark = undefined;
+      let marks = 0;
+      let distance = Number.MAX_SAFE_INTEGER;
+      arr.forEach((coord, index) => {
+        const dist = calcManhattan(c, coord);
+        if (dist < distance) {
+          distance = dist;
+          marks = 1;
+          mark = index;
+        } else if (dist === distance) {
+          marks++;
+          mark = -1;
+        }
+      })
+
+      area[y][x] = mark;
+    });
+  });
+  return area;
+}
+
+function countMarks(area) {
+  const acc = {};
+  let mark;
+  for (y = 1; y < area.length -1; y++) {
+    for (x = 1; x < area[y].length -1; x++) {
+      mark = area[y][x];
+      acc[mark] = (acc[mark] || 0) + 1;
+    }
+  };
+  return acc;
+}
+
+function zeroBordersAndShared(area, counts) { // Side Effect
+  sx = area[0].length;
+  sy = area.length;
+
+  for(x = 0; x < sx; x++) {
+    counts[area[0][x]] = 0;
+    counts[area[sy-1][x]] = 0;
+  }
+  for(y = 1; y < sy - 1; y++) {
+    counts[area[y][0]] = 0;
+    counts[area[y][sx-1]] = 0;
+  }
+  counts[-1] = 0;
+  return counts;
+}
+
 function part1(arr) {
+  const extent = findExtent(arr);
+  const markedArea = markArea(extent, arr);
+  const counts = countMarks(markedArea);
+  const finiteCounts = zeroBordersAndShared(markedArea, counts);
+  let max = Number.MIN_SAFE_INTEGER;
+  for (key in finiteCounts) {
+    max = Math.max(max, finiteCounts[key])
+  }
+  return max;
 };
 
 function part2(arr) {
@@ -69,5 +154,5 @@ function part2(arr) {
 console.log(part1(testInput));
 console.log(part1(input));
 
-console.log(part2(testInput));
-console.log(part2(input));
+// console.log(part2(testInput));
+// console.log(part2(input));
